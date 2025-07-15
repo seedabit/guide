@@ -1,8 +1,9 @@
+import React from 'react'
 import PageIndex from '@/components/core/page-index/page-index'
 import PathDisplay from '@/components/core/path-display'
 import { Divider } from '@/components/ui/divider'
 import { Topic } from '@/types/topic'
-import React from 'react'
+import { CodeArea } from '@/components/ui/code-area'
 
 const topics: Topic[] = [
     { title: 'Componentes: De <div> a <View>', href: 'title' },
@@ -12,67 +13,6 @@ const topics: Topic[] = [
 ]
 
 export default function NativeComponents() {
-    const profileCardCode = `
-import React from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native';
-
-function ProfileCard() {
-  return (
-    <View> // Nosso container principal, como uma <div>
-      <Image
-        source={{ uri: 'https://placehold.co/100x100' }}
-        style={{ width: 100, height: 100 }}
-      />
-
-      <Text>Nome do Usuário</Text> // Todo texto dentro de um <Text>
-
-      <TextInput placeholder="Deixe um comentário..." />
-
-      <TouchableOpacity onPress={() => alert('Comentário enviado!')}>
-        <View> // Podemos aninhar Views para estilizar o botão
-          <Text>Enviar</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-    `;
-
-    const flatListCode = `
-import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-
-const TASKS = [
-  { id: '1', title: 'Aprender sobre Componentes Nativos' },
-  { id: '2', title: 'Entender a FlatList' },
-  { id: '3', title: 'Praticar com um projeto' },
-];
-
-function TaskList() {
-  const renderTask = ({ item }) => (
-    <View style={styles.taskItem}>
-      <Text>{item.title}</Text>
-    </View>
-  );
-
-  return (
-    <FlatList
-      data={TASKS}
-      renderItem={renderTask}
-      keyExtractor={item => item.id}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  taskItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  }
-});
-    `;
-
     return (
         <div className='w-full h-full flex items-start justify-start md:space-x-10'>
             <div className='w-full md:w-[75%] lg:w-[80%] mt-5 md:mt-0 flex flex-col justify-center gap-4 px-3 md:px-10'>
@@ -84,14 +24,14 @@ const styles = StyleSheet.create({
                 <Divider variant='horizontal' color='secondary' className='w-full' />
                 <section id='mindset' className='flex flex-col gap-4'>
                     <h2 className='text-3xl'>A Mentalidade é a Mesma, as Ferramentas Mudam</h2>
-                    <p className='text-secondary'>A boa notícia é que você não precisa reaprender a pensar. A ideia de criar componentes pequenos, reutilizáveis e com responsabilidade única continua sendo o pilar do desenvolvimento. Um componente de <code>Card</code> continuará sendo um <code>Card</code>, e um <code>Button</code> continuará sendo um <code>Button</code>. O que muda são os elementos que usamos <i>dentro</i> desses componentes para dar-lhes forma e função.</p>
+                    <p>A boa notícia é que você não precisa reaprender a pensar. A ideia de criar componentes pequenos, reutilizáveis e com responsabilidade única continua sendo o pilar do desenvolvimento. Um componente de <code>Card</code> continuará sendo um <code>Card</code>, e um <code>Button</code> continuará sendo um <code>Button</code>. O que muda são os elementos que usamos <i>dentro</i> desses componentes para dar-lhes forma e função.</p>
                 </section>
                 <Divider variant='horizontal' color='secondary' className='w-full' />
                 <section id='translating-html' className='flex flex-col gap-4'>
                     <h2 className='text-3xl'>Traduzindo o HTML para o Nativo</h2>
-                    <p className='text-secondary'>No React Native, não temos acesso a tags HTML como <code>&lt;div&gt;</code>, <code>&lt;p&gt;</code> ou <code>&lt;span&gt;</code>. Em vez disso, importamos um conjunto de componentes essenciais da biblioteca <code>react-native</code> que são traduzidos para os elementos de interface nativos do iOS e do Android.</p>
-                    <p className='text-secondary'>Os mais importantes são:</p>
-                    <ul className='list-disc list-inside space-y-4 my-4 text-secondary'>
+                    <p>No React Native, não temos acesso a tags HTML como <code>&lt;div&gt;</code>, <code>&lt;p&gt;</code> ou <code>&lt;span&gt;</code>. Em vez disso, importamos um conjunto de componentes essenciais da biblioteca <code>react-native</code> que são traduzidos para os elementos de interface nativos do iOS e do Android.</p>
+                    <p>Os mais importantes são:</p>
+                    <ul className='list-disc list-inside space-y-4 my-4'>
                         <li><strong><code>&lt;View&gt;</code>: O novo <code>&lt;div&gt;</code></strong><br />O <code>&lt;View&gt;</code> é o contêiner mais fundamental para layout. Pense nele como uma <code>&lt;div&gt;</code> sem nenhuma estilização. Ele serve para agrupar outros componentes e organizar a estrutura da sua tela.</li>
                         <li><strong><code>&lt;Text&gt;</code>: O único lugar para textos</strong><br />Esta é uma regra de ouro: <strong>qualquer texto que você queira exibir na tela precisa, obrigatoriamente, estar dentro de um componente <code>&lt;Text&gt;</code></strong>. Diferente da web, onde textos podem viver soltos, no React Native isso causará um erro.</li>
                         <li><strong>Outros Essenciais:</strong>
@@ -102,23 +42,23 @@ const styles = StyleSheet.create({
                             </ul>
                         </li>
                     </ul>
-                    <p className='text-secondary'>Veja um exemplo simples que combina esses componentes:</p>
-                    <pre className='bg-gray-800 text-white p-4 rounded-md my-2 overflow-x-auto'><code>{profileCardCode}</code></pre>
+                    <p>Veja um exemplo simples que combina esses componentes:</p>
+                    <CodeArea link='/react-native/components/profile-card.tsx' />
                 </section>
                 <Divider variant='horizontal' color='secondary' className='w-full' />
                 <section id='flatlist' className='flex flex-col gap-4'>
                     <h2 className='text-3xl'>Renderizando Listas com FlatList</h2>
-                    <p className='text-secondary'>No React para a web, é muito comum usarmos a função <code>.map()</code> para renderizar uma lista. Embora isso funcione no React Native para listas pequenas, pode causar sérios problemas de performance em listas longas. O motivo é que o <code>.map()</code> renderiza <strong>todos</strong> os itens de uma só vez, consumindo muita memória.</p>
-                    <p className='text-secondary'>A solução nativa para isso é o componente <strong><code>&lt;FlatList&gt;</code></strong>.</p>
-                    <p className='text-secondary'>A <code>&lt;FlatList&gt;</code> é inteligente. Ela renderiza apenas os itens que estão visíveis na tela e "recicla" os componentes à medida que o usuário rola a lista. Para usá-la, precisamos passar três props principais:</p>
-                    <ol className='list-decimal list-inside space-y-2 my-2 text-secondary'>
+                    <p>No React para a web, é muito comum usarmos a função <code>.map()</code> para renderizar uma lista. Embora isso funcione no React Native para listas pequenas, pode causar sérios problemas de performance em listas longas. O motivo é que o <code>.map()</code> renderiza <strong>todos</strong> os itens de uma só vez, consumindo muita memória.</p>
+                    <p>A solução nativa para isso é o componente <strong><code>&lt;FlatList&gt;</code></strong>.</p>
+                    <p>A <code>&lt;FlatList&gt;</code> é inteligente. Ela renderiza apenas os itens que estão visíveis na tela e "recicla" os componentes à medida que o usuário rola a lista. Para usá-la, precisamos passar três props principais:</p>
+                    <ol className='list-decimal list-inside space-y-2 my-2'>
                         <li><code>data</code>: O array de dados que você quer renderizar.</li>
                         <li><code>renderItem</code>: Uma função que recebe um item do seu array e retorna o componente JSX que deve ser exibido para aquele item.</li>
                         <li><code>keyExtractor</code>: Uma função que recebe um item e retorna uma string única para ser usada como a <code>key</code> do React.</li>
                     </ol>
-                    <p className='text-secondary'>Vamos ver um exemplo de uma lista de tarefas:</p>
-                    <pre className='bg-gray-800 text-white p-4 rounded-md my-2 overflow-x-auto'><code>{flatListCode}</code></pre>
-                    <p className='text-secondary'>Com esses componentes em mãos, você já tem o necessário para construir a estrutura de praticamente qualquer tela de um aplicativo.</p>
+                    <p>Vamos ver um exemplo de uma lista de tarefas:</p>
+                    <CodeArea link='/react-native/components/task-list.tsx' />
+                    <p>Com esses componentes básicos em mãos, você já tem o necessário para construir a estrutura de praticamente qualquer tela de um aplicativo.</p>
                 </section>
             </div>
             <PageIndex topics={topics} className='w-[20%] lg:w-[15%]' />
