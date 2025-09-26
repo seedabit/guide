@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sidebar } from '@/data/sidebar'
 import { cn } from '@/utils/lib/tailwind-merge'
+import { CollapsableSection } from '@/components/ui/collapsable-section'
 
 interface SidebarProps {
     className?: string
@@ -32,7 +33,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => { // sidebar class fo
                 </div>
                 <div className='flex flex-col space-y-3'>
                     {sidebar.map((group, index) => (
-                        <SidebarGroup key={index} {...group} />
+                        <CollapsableSection key={index} title={group.title}>
+                            <SidebarGroup {...group} />
+                        </CollapsableSection>
                     ))}
                 </div>
                 <div className='pb-0.5'></div>
