@@ -1,0 +1,148 @@
+name: Reusable annotate release & upload image
+
+on:
+    workflow_call:
+        inputs:
+            runner:
+                required: false
+                type: string
+                default: self-hosted
+            version:
+                required: true
+                type: string
+            branch:
+                required: true
+                type: string
+        secrets:
+            REGISTRY_USERNAME:
+                required: true
+            REGISTRY_PASSWORD:
+                required: true
+
+jobs:
+    annotate:
+        name: Annotate Release and Upload Docker Image
+        runs-on: ${{ inputs.runner }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Annotate Release with Docker image
+              if: ${{ inputs.branch == 'main' }}
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const version = `${{ inputs.version }}`;
+                      const owner = context.repo.owner;
+                      const repo = context.repo.repo;
+                      const tagCandidates = [`v${version}`, version];
+                      let release = null;
+                      for (const tag of tagCandidates) {
+                        try {
+                          const res = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+                          release = res.data;
+                          break;
+                        } catch (e) {
+                          // not found, continue
+                        }
+                      }
+                      if (!release) {
+                        console.log(`No release found for tags: ${tagCandidates.join(', ')}`);
+                        return;
+                      }
+                      const imageLine = `\n\nDocker image: registry.seedabit.org.br/seedabit/hostpark-front:${version}`;
+                      const body = release.body || '';
+                      if (body.includes(imageLine)) {
+                        console.log('Release already contains image info');
+                        return;
+                      }
+                      const updated = body + imageLine;
+                      await github.rest.repos.updateRelease({ owner, repo, release_id: release.id, body: updated });
+                      console.log('Release updated with Docker image info');
+
+            - name: Login to registry
+              if: ${{ inputs.branch == 'main' }}
+              uses: docker/login-action@v3
+              with:
+                  registry: registry.seedabit.org.br
+                  username: ${{ secrets.REGISTRY_USERNAME }}
+                  password: ${{ secrets.REGISTRY_PASSWORD }}
+
+            - name: Save image as tar.gz
+              if: ${{ inputs.branch == 'main' }}
+              run: |
+                  # Prefer the provided input version; fall back to package.json if missing
+                  VERSION="${{ inputs.version }}"
+                  if [ -z "$VERSION" ]; then
+                    echo "inputs.version is empty — attempting to read version from package.json"
+                    if [ -f package.json ]; then
+                      VERSION=$(node -p "require('./package.json').version" 2>/dev/null || true)
+                    else
+                      echo "package.json not found in workspace"
+                    fi
+                  fi
+
+                  if [ -z "$VERSION" ]; then
+                    echo "No version available — skipping image pull/save"
+                    exit 0
+                  fi
+
+                  IMAGE="registry.seedabit.org.br/seedabit/guia:$VERSION"
+                  echo "Pulling $IMAGE"
+                  docker pull "$IMAGE"
+                  docker save "$IMAGE" -o image-$VERSION.tar
+                  gzip -9 image-$VERSION.tar
+
+            - name: Upload image tar.gz to GitHub Release
+              if: ${{ inputs.branch == 'main' }}
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const fs = require('fs');
+                      const version = `${{ inputs.version }}`;
+                      const owner = context.repo.owner;
+                      const repo = context.repo.repo;
+                      const tagCandidates = [`v${version}`, version];
+                      let release = null;
+                      for (const tag of tagCandidates) {
+                        try {
+                          const res = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+                          release = res.data;
+                          break;
+                        } catch (e) {
+                          // not found, continue
+                        }
+                      }
+                      if (!release) {
+                        console.log(`No release found for tags: ${tagCandidates.join(', ')}`);
+                        return;
+                      }
+                      const filePath = `image-${version}.tar.gz`;
+                      if (!fs.existsSync(filePath)) {
+                        console.log(`File not found: ${filePath}`);
+                        return;
+                      }
+                      // check if asset already exists
+                      const assets = await github.rest.repos.listReleaseAssets({ owner, repo, release_id: release.id });
+                      const already = assets.data.find(a => a.name === filePath);
+                      if (already) {
+                        console.log('Asset already exists on release:', filePath);
+                        return;
+                      }
+                      const content = fs.readFileSync(filePath);
+                      await github.rest.repos.uploadReleaseAsset({
+                        owner,
+                        repo,
+                        release_id: release.id,
+                        name: filePath,
+                        data: content,
+                        headers: {
+                          'content-type': 'application/gzip',
+                          'content-length': content.length
+                        }
+                      });
+                      console.log('Uploaded release asset:', filePath);
