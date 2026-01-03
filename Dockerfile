@@ -1,6 +1,4 @@
-# -------------------------------
-# Etapa de build
-# -------------------------------
+# build phase
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -13,9 +11,7 @@ COPY . .
 
 RUN npm run build
 
-# -------------------------------
-# Etapa de execução
-# -------------------------------
+# execution phase
 FROM node:20-alpine AS runner
 
 WORKDIR /app
