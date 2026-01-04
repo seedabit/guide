@@ -53,7 +53,7 @@ jobs:
                         console.log(`No release found for tags: ${tagCandidates.join(', ')}`);
                         return;
                       }
-                      const imageLine = `\n\nDocker image: registry.seedabit.org.br/seedabit/hostpark-front:${version}`;
+                      const imageLine = `\n\nDocker image: registry.seedabit.org.br/seedabit/guia:${version}`;
                       const body = release.body || '';
                       if (body.includes(imageLine)) {
                         console.log('Release already contains image info');
