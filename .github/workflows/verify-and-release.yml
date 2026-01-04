@@ -4,26 +4,16 @@ on:
     push:
         branches:
             - main
-    pull_request:
-        branches:
-            - main
-        types:
-            - opened
-            - synchronize
-            - reopened
-            - closed
 
 jobs:
     setup:
         name: Setup Version
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         uses: ./.github/workflows/job-setup-node.yml
         with:
             runner: self-hosted
 
     package-allign:
         name: Allign package.json and package-lock.json versions
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         runs-on: self-hosted
         needs: setup
         steps:
@@ -40,7 +30,6 @@ jobs:
 
     lint:
         name: Lint Codebase
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         runs-on: self-hosted
         needs: package-allign
         steps:
@@ -68,7 +57,6 @@ jobs:
 
     build-app:
         name: Build App
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         runs-on: self-hosted
         needs: [setup, lint]
         outputs:
@@ -98,7 +86,6 @@ jobs:
 
     docker-verify:
         name: Verify Docker Build (local)
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         runs-on: self-hosted
         needs: [setup, lint, build-app]
         steps:
@@ -125,7 +112,6 @@ jobs:
 
     release:
         name: Semantic Release
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         runs-on: self-hosted
         needs: [setup, lint, build-app, docker-verify]
         steps:
@@ -149,7 +135,6 @@ jobs:
 
     build-and-push:
         name: Build and Push Docker Image
-        if: github.ref_name == 'main' && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed'))
         needs: [setup, lint, build-app, release]
         uses: ./.github/workflows/job-docker-build-push.yml
         with:
@@ -163,7 +148,6 @@ jobs:
 
     annotate:
         name: Annotate Release (Self-Hosted)
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
         needs: [build-and-push, build-app]
         uses: ./.github/workflows/job-annotate-release.yml
         with:
