@@ -11,11 +11,11 @@ jobs:
         name: Setup Node Environment
         uses: ./.github/workflows/job-setup-node.yml
         with:
-            runner: ubuntu-latest
+            runner: self-hosted
 
     lint:
         name: Lint (fast-fail)
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: setup
         steps:
             - name: Checkout
@@ -42,7 +42,7 @@ jobs:
 
     build:
         name: Build Application
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: [setup, lint]
         steps:
             - name: Checkout

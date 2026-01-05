@@ -16,11 +16,11 @@ jobs:
         name: Setup Version
         uses: ./.github/workflows/job-setup-node.yml
         with:
-            runner: ubuntu-latest
+            runner: self-hosted
 
     package-allign:
         name: Allign package.json and package-lock.json versions
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: setup
         steps:
             - name: Checkout
@@ -36,7 +36,7 @@ jobs:
 
     lint:
         name: Lint Codebase
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: package-allign
         steps:
             - name: Checkout
@@ -63,7 +63,7 @@ jobs:
 
     build-app:
         name: Build App
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: [setup, lint]
         outputs:
             version: ${{ needs.setup.outputs.version }}
@@ -92,7 +92,7 @@ jobs:
 
     docker-verify:
         name: Verify Docker Build (local)
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: [setup, lint, build-app]
         steps:
             - name: Checkout
@@ -118,7 +118,7 @@ jobs:
 
     release:
         name: Semantic Release
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: [setup, lint, build-app, docker-verify]
         steps:
             - name: Checkout
@@ -145,7 +145,7 @@ jobs:
         needs: [setup, lint, build-app, release]
         uses: ./.github/workflows/job-docker-build-push.yml
         with:
-            runner: ubuntu-latest
+            runner: self-hosted
             version: ${{ needs.build-app.outputs.version }}
             branch: ${{ github.ref_name }}
         secrets:
@@ -154,11 +154,11 @@ jobs:
             # GITHUB_TOKEN is provided by Actions; do not pass it as a workflow_call secret
 
     annotate:
-        name: Annotate Release (ubuntu-latest)
+        name: Annotate Release (self-hosted)
         needs: [build-and-push, build-app]
         uses: ./.github/workflows/job-annotate-release.yml
         with:
-            runner: ubuntu-latest
+            runner: self-hosted
             version: ${{ needs.build-app.outputs.version }}
             branch: ${{ github.ref_name }}
         secrets:
