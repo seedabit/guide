@@ -29,7 +29,11 @@ try {
 const regex =
     /^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([a-zA-Z0-9._-]+\))?!?:\s.+$/
 
-if (!regex.test(commitMsg)) {
+// Validate only the commit message title (first line) so release notes
+// or longer commit bodies won't fail the Conventional Commits check.
+const commitTitle = commitMsg.split('\n')[0].trim()
+
+if (!regex.test(commitTitle)) {
     console.error(
         "ERROR: Commit message does not follow Conventional Commits format."
     )
