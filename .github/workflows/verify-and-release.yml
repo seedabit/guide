@@ -16,11 +16,11 @@ jobs:
         name: Setup Version
         uses: ./.github/workflows/job-setup-node.yml
         with:
-            runner: self-hosted
+            runner: self-hosted, linux, xsmall
 
     package-allign:
         name: Allign package.json and package-lock.json versions
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux, xsmall]
         needs: setup
         steps:
             - name: Checkout
@@ -31,12 +31,20 @@ jobs:
               with:
                   node-version: 24.10.0
 
+            - name: Cache npm
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
             - name: Install dependencies
               run: npm i
 
     lint:
         name: Lint Codebase
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux, xsmall]
         needs: package-allign
         steps:
             - name: Checkout
@@ -63,7 +71,7 @@ jobs:
 
     build-app:
         name: Build App
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux, small]
         needs: [setup, lint]
         outputs:
             version: ${{ needs.setup.outputs.version }}
@@ -92,7 +100,7 @@ jobs:
 
     docker-verify:
         name: Verify Docker Build (local)
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux, small]
         needs: [setup, lint, build-app]
         steps:
             - name: Checkout
@@ -112,13 +120,14 @@ jobs:
                   context: .
                   push: false
                   load: true
+                  cache-from: type=gha
                   cache-to: type=gha,mode=max
                   tags: |
                       guia:verify-${{ needs.build-app.outputs.version }}
 
     release:
         name: Semantic Release
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux, xsmall]
         needs: [setup, lint, build-app, docker-verify]
         steps:
             - name: Checkout
@@ -145,7 +154,7 @@ jobs:
         needs: [setup, lint, build-app, release]
         uses: ./.github/workflows/job-docker-build-push.yml
         with:
-            runner: self-hosted
+            runner: self-hosted, linux, small
             version: ${{ needs.build-app.outputs.version }}
             branch: ${{ github.ref_name }}
         secrets:
@@ -158,7 +167,7 @@ jobs:
         needs: [build-and-push, build-app]
         uses: ./.github/workflows/job-annotate-release.yml
         with:
-            runner: self-hosted
+            runner: self-hosted, linux, xsmall
             version: ${{ needs.build-app.outputs.version }}
             branch: ${{ github.ref_name }}
         secrets:
