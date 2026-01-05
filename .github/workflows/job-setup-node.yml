@@ -1,0 +1,37 @@
+name: Reusable Node setup job
+
+on:
+    workflow_call:
+        inputs:
+            runner:
+                required: false
+                type: string
+                default: ubuntu-latest
+        outputs:
+            version:
+                description: "Package version extracted from package.json"
+                value: ${{ jobs.setup.outputs.version }}
+
+jobs:
+    setup:
+        name: Setup Node Environment
+        runs-on: ${{ inputs.runner }}
+        outputs:
+            version: ${{ steps.pkg.outputs.version }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24.10.0
+
+            - name: Get package version
+              id: pkg
+              shell: bash
+              run: |
+                  VERSION=$(node -p 'require("./package.json").version')
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT

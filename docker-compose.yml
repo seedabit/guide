@@ -1,0 +1,11 @@
+services:
+  guia:
+    image: registry.seedabit.org.br/seedabit/guia:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always

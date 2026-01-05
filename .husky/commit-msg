@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+# Cross-platform commit-msg hook: delegate validation to Node.js script
+
+HOOK_DIR="$(dirname "$0")"
+SCRIPT="$HOOK_DIR/commit-msg.cjs"
+
+if command -v node >/dev/null 2>&1; then
+    node "$SCRIPT" "$1"
+    exit $?
+else
+    echo "ERROR: Node.js is required to run commit hooks. Please install Node.js." >&2
+    exit 1
+fi
