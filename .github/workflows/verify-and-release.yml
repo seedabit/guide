@@ -1,5 +1,11 @@
 name: Verify, Build, Release and Deploy
 
+permissions:
+    contents: write
+    packages: write
+    issues: write
+    pull-requests: write
+
 on:
     push:
         branches:
