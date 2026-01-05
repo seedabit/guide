@@ -6,7 +6,7 @@ on:
             runner:
                 required: false
                 type: string
-                default: self-hosted
+                default: ubuntu-latest
         outputs:
             version:
                 description: "Package version extracted from package.json"

@@ -6,7 +6,7 @@ on:
             runner:
                 required: false
                 type: string
-                default: self-hosted
+                default: ubuntu-latest
             version:
                 required: true
                 type: string
